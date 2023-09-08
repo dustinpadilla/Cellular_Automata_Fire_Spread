@@ -1,0 +1,67 @@
+function SimpleFireSpread(N,P,S)
+%% SIMPLE FOREST FIRE SPREAD
+%Function models a forest fire with each tree on fire has a set probability
+%to ignite a tree which hasn't been burnt in its Von Neumann Neighbourhood.
+%The output is an animated graph showing the fire spread.
+
+%% DEFINING INPUT
+%N - The size of the matrix on which the forest will be grown (N*N)
+%P - The average percantage of the matrix that will be forested (A P%
+     %chance for each tree to grow)
+%S - The probability (as a percentage) of a fire to spread to neighbouring trees
+%% INPUT ERRORS
+if N < 1 || floor(N) ~= N %Invalid size
+    error('No valid input for size. Must be a positive integer.')
+end
+if P < 0 || floor(P) ~= P || P>100 %Invalid percent coverage
+    error('No valid input for percent coverage. Must be an integer value from 0 to 100')
+end
+if S < 0 || floor(S) ~= S || S>100 %Invalid spread probability
+    error('No valid input for spread probability. Must be an integer value from 0 to 100')
+end
+
+%% SETUP
+F=Forest(N,P); %Randomly plotting a forest to burn
+%Spread=[0 1; 1 1; 1 0; 1 -1; 0 -1; -1 -1; -1 0; -1 1]; %Possible spreads (Moore Neighbourhood)
+Spread=[0 1; 1 0; 0 -1; -1 0]; % Von Neumann neighborhood
+t=0; %Initial fire occurs at timestep 0
+f=find(~F); %Finding all trees
+F(f(randi(length(f))))=1; %Starting a fire on a random tree
+%% LOOPS
+while ~isempty(find(F==1,1)) %Loop only runs while there are fires
+    [i,j]=find(F==1); %Coordinates of the fire
+    for x=1:length(i) %For each fire
+        for M=1:4 %Checking each spreading option
+            try %Makes it so off grid checks don't cause an error
+                if F(i(x)+Spread(M),j(x)+Spread(M+4))==0 %Checking for trees
+                    if randi([1,100])<= S %Chance a tree will ignite
+                    F(i(x)+Spread(M),j(x)+Spread(M+4))=1; %Fire spreads to found trees
+                    end
+                end
+            end
+            F(i(x),j(x))=2; %Trees that have been burned
+            q=F(i(x),j(x));
+        end
+    end
+imagesc(F); %The updated forest\
+drawnow; %Updating the plot each loop
+title(['t = ' num2str(t)]) %Time since start of fire to be seen on the plot
+t=t+1; %Timesteps spent burning
+%figure()
+%legend
+%figure()
+ %legend('Domestic Suceptible','Domestic Infectious','Wild Suceptible','Wild Infectious')
+%figure(2)
+%plot(t,q);
+%figure(2)
+%plot(t,f);
+%hold on
+%figure(2)
+%plot(t,Spread(i));
+%hold on
+end
+%figure(2)
+%plot(t,f);
+% figure()
+% hold on
+% plot(t,F());
